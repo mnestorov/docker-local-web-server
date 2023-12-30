@@ -5,7 +5,7 @@ networks:
     external: true
     ipam:
       config:
-        - subnet: 172.21.0.0/16
+        - subnet: 172.19.0.0/16
   internal:
     external: false
 
@@ -28,13 +28,14 @@ services:
       - ./docker_files/ssl/:/etc/traefik/
     networks:
       web:
-        ipv4_address: 172.21.0.6
+        ipv4_address: 172.19.0.2
     labels:
       - traefik.enable=true
       - traefik.docker.network=web
       - traefik.http.routers.api.entrypoints=websecure
       - traefik.http.routers.api.rule=Host(`traefik.localhost`)
       - traefik.http.routers.api.tls.options=default
+      - traefik.http.routers.api.tls=true
       - traefik.http.routers.api.service=api@internal
     restart: always
 
@@ -51,7 +52,7 @@ services:
       - traefik.http.services.portainer.loadbalancer.server.port=9000
     networks:
       web:
-        ipv4_address: 172.21.0.8
+        ipv4_address: 172.19.0.3
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - portainer_data:/data
@@ -62,9 +63,9 @@ services:
     hostname: mariadb
     mem_reservation: 4000M
     environment:
-      - "MYSQL_ROOT_PASSWORD=root"
-      - "MYSQL_USER=root"
-      - "MYSQL_PASSWORD=root"
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=password
     volumes:
       - dbdata:/var/lib/mysql
       - ./docker_files/database/backups:/var/tmp/backups
@@ -77,35 +78,15 @@ services:
       - traefik.http.services.db.loadbalancer.server.port=3306
     networks:
       web:
-        ipv4_address: 172.21.0.10
-
-  postgres:
-    image: postgres
-    container_name: postgres
-    hostname: postgres
-    environment:
-      - "POSTGRES_DB=mkformater"
-      - "POSTGRES_USER=test"
-      - "POSTGRES_PASSWORD=test"
-      - "PGDATA=/data/postgres-tuto"
-    volumes:
-      - postgres_data:/var/lib/postgres
-    labels:
-      - traefik.enable=true
-      - traefik.docker.network=web
-      - traefik.http.routers.postgres.entrypoints=websecure
-      - traefik.http.routers.postgres.rule=Host(`postgres.localhost`)
-      - traefik.http.routers.postgres.tls.options=default
-      - traefik.http.services.postgres.loadbalancer.server.port=5432
-    networks:
-      web:
-        ipv4_address: 172.21.0.12
+        ipv4_address: 172.19.0.4
 
   phpmyadmin:
     container_name: phpmyadmin
     build:
       context: .
       dockerfile: docker_files/phpmyadmin/Dockerfile
+    depends_on:
+      - db
     links:
       - db
     restart: always
@@ -127,7 +108,24 @@ services:
       - traefik.http.services.phpmyadmin.loadbalancer.server.port=80
     networks:
       web:
-        ipv4_address: 172.21.0.14
+        ipv4_address: 172.19.0.5
+        
+  adminer:
+    image: adminer
+    container_name: adminer
+    depends_on:
+      - db
+    restart: always
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=web
+      - traefik.http.routers.adminer.entrypoints=websecure
+      - traefik.http.routers.adminer.rule=Host(`adminer.localhost`)
+      - traefik.http.routers.adminer.tls.options=default
+      - traefik.http.services.adminer.loadbalancer.server.port=8080
+    networks:
+      web:   
+        ipv4_address: 172.19.0.6
 
   mailhog:
     image: mailhog/mailhog
@@ -144,64 +142,9 @@ services:
       - traefik.http.services.mailhog.loadbalancer.server.port=8025
     networks:
       web:
-        ipv4_address: 172.21.0.16
+        ipv4_address: 172.19.0.7
     volumes:
       - mail-hog_data:/data
-
-  redis:
-    image: redis:alpine
-    container_name: redis
-    command: redis-server --appendonly yes --requirepass "password"
-    volumes:
-      - redis_data:/data
-    ports:
-      - "8002:6379"
-    networks:
-      web:
-        ipv4_address: 172.21.0.18
-        
-  mongo:
-    image: mongo
-    container_name: mongo
-    restart: always
-    volumes:
-      - mongo_data:/data/db
-    ports:
-      - "27017:27017"
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME=root
-      - MONGO_INITDB_ROOT_PASSWORD=root
-    labels:
-      - traefik.enable=true
-      - traefik.docker.network=web
-      - traefik.http.routers.mongo.entrypoints=websecure
-      - traefik.http.routers.mongo.rule=Host(`mongo.localhost`)
-      - traefik.http.routers.mongo.tls.options=default
-      - traefik.http.services.mongo.loadbalancer.server.port=27017
-    networks:
-      web:
-        ipv4_address: 172.21.0.20
-        
-  mongo-express:
-    image: mongo-express
-    container_name: mongo-express
-    restart: always
-    ports:
-      - 8081:8081
-    environment:
-      ME_CONFIG_MONGODB_SERVER: mongo
-      ME_CONFIG_MONGODB_ADMINUSERNAME: root
-      ME_CONFIG_MONGODB_ADMINPASSWORD: root
-    labels:
-      - traefik.enable=true
-      - traefik.docker.network=web
-      - traefik.http.routers.mongo-express.entrypoints=websecure
-      - traefik.http.routers.mongo-express.rule=Host(`mongo-express.localhost`)
-      - traefik.http.routers.mongo-express.tls.options=default
-      - traefik.http.services.mongo-express.loadbalancer.server.port=8081
-    networks:
-      web:
-        ipv4_address: 172.21.0.22
 
 volumes:
   dbdata:
@@ -209,6 +152,3 @@ volumes:
   portainer_data:
   mail-hog_data:
   certs:
-  redis_data:
-  mongo_data:
-  postgres_data:
