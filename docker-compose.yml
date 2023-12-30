@@ -3,6 +3,9 @@ version: '3.9'
 networks:
   web:
     external: true
+    ipam:
+      config:
+        - subnet: 172.21.0.0/16
   internal:
     external: false
 
@@ -11,13 +14,13 @@ services:
     container_name: traefik
     image: traefik:v2.9
     ports:
-      - "80:80"      # The HTTP port
+      - "80:80" # The HTTP port
       - "443:443"
       - "8080:8080"
       - "9900:9900"
       - "9901:9901"
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock  # So that Traefik can listen to the Docker events
+      - /var/run/docker.sock:/var/run/docker.sock # So that Traefik can listen to the Docker events
       - ./docker_files/traefik.toml:/etc/traefik/traefik.toml
       - ./docker_files/traefik_secure.toml:/etc/traefik/traefik_secure.toml
       - ./docker_files/cert:/etc/traefik/cert
@@ -25,7 +28,7 @@ services:
       - ./docker_files/ssl/:/etc/traefik/
     networks:
       web:
-        ipv4_address: 172.20.0.2
+        ipv4_address: 172.21.0.6
     labels:
       - traefik.enable=true
       - traefik.docker.network=web
@@ -36,7 +39,7 @@ services:
     restart: always
 
   portainer:
-    image: portainer/portainer-ce:2.18.4 # A container that exposes an API to show it's IP address
+    image: portainer/portainer-ce:latest # A container that exposes an API to show it's IP address
     container_name: portainer
     restart: always
     labels:
@@ -48,7 +51,7 @@ services:
       - traefik.http.services.portainer.loadbalancer.server.port=9000
     networks:
       web:
-        ipv4_address: 172.20.0.8
+        ipv4_address: 172.21.0.8
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - portainer_data:/data
@@ -59,9 +62,9 @@ services:
     hostname: mariadb
     mem_reservation: 4000M
     environment:
-      - "MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}"
-      - "MYSQL_USER=${MYSQL_USER}"
-      - "MYSQL_PASSWORD=${MYSQL_PASSWORD}"
+      - "MYSQL_ROOT_PASSWORD=root"
+      - "MYSQL_USER=root"
+      - "MYSQL_PASSWORD=root"
     volumes:
       - dbdata:/var/lib/mysql
       - ./docker_files/database/backups:/var/tmp/backups
@@ -74,7 +77,7 @@ services:
       - traefik.http.services.db.loadbalancer.server.port=3306
     networks:
       web:
-        ipv4_address: 172.20.0.3
+        ipv4_address: 172.21.0.10
 
   postgres:
     image: postgres
@@ -96,7 +99,7 @@ services:
       - traefik.http.services.postgres.loadbalancer.server.port=5432
     networks:
       web:
-        ipv4_address: 172.20.0.27
+        ipv4_address: 172.21.0.12
 
   phpmyadmin:
     container_name: phpmyadmin
@@ -124,13 +127,13 @@ services:
       - traefik.http.services.phpmyadmin.loadbalancer.server.port=80
     networks:
       web:
-        ipv4_address: 172.20.0.9
+        ipv4_address: 172.21.0.14
 
   mailhog:
     image: mailhog/mailhog
     container_name: mailhog
     ports:
-      - "1025:1025"      # The HTTP port
+      - "1025:1025" # The HTTP port
       - "8025:8025"
     labels:
       - traefik.enable=true
@@ -141,7 +144,7 @@ services:
       - traefik.http.services.mailhog.loadbalancer.server.port=8025
     networks:
       web:
-        ipv4_address: 172.20.0.5
+        ipv4_address: 172.21.0.16
     volumes:
       - mail-hog_data:/data
 
@@ -155,7 +158,7 @@ services:
       - "8002:6379"
     networks:
       web:
-        ipv4_address: 172.20.0.4
+        ipv4_address: 172.21.0.18
         
   mongo:
     image: mongo
@@ -177,7 +180,7 @@ services:
       - traefik.http.services.mongo.loadbalancer.server.port=27017
     networks:
       web:
-        ipv4_address: 172.20.0.10
+        ipv4_address: 172.21.0.20
         
   mongo-express:
     image: mongo-express
@@ -198,7 +201,7 @@ services:
       - traefik.http.services.mongo-express.loadbalancer.server.port=8081
     networks:
       web:
-        ipv4_address: 172.20.0.22
+        ipv4_address: 172.21.0.22
 
 volumes:
   dbdata:
