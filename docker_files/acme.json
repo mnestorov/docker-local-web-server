@@ -1,12 +1,12 @@
 {
   "lets-encrypt": {
     "Account": {
-      "Email": "amsteljlo1983@gmail.com",
+      "Email": "admin@admin.test",
       "Registration": {
         "body": {
           "status": "valid",
           "contact": [
-            "mailto:amsteljlo1983@gmail.com"
+            "mailto:admin@admin.test"
           ]
         },
         "uri": "https://acme-v02.api.letsencrypt.org/acme/acct/480036150"
