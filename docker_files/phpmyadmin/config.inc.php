@@ -8,4 +8,4 @@ $cfg['Servers'][1]['extension']     = 'mariadb';
 $cfg['Servers'][1]['compress']      = FALSE;
 $cfg['Servers'][1]['auth_type']     = 'config';
 $cfg['Servers'][1]['user']          = 'root';
-$cfg['Servers'][1]['password']      = 'root';
+$cfg['Servers'][1]['password']      = 'password';
