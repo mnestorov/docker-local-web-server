@@ -35,9 +35,12 @@ Your support is greatly appreciated and will help ensure the project's continued
     - [Stop All Containers](#stop-all-containers)
     - [Generate New SSL for Container](#generate-new-ssl-for-container)
 - [SSL Troubleshooting](#ssl-troubleshooting)
+- [References](#references)
 - [License](#license)
 
 ## Overview
+
+**Initial release by:** [Steliyan Stoyanov](https://github.com/SteliyanPStoyanov)
 
 This Docker development environment provides a comprehensive set of services for web development, including Traefik, Portainer, MariaDB, phpMyAdmin, Adminer, and Mailhog.
 
@@ -228,7 +231,7 @@ mkcert -cert-file ./docker_files/cert -key-file ./docker_files/cert-key portaine
 - Elasticsearch: https://elasticsearch.localhost
 - MariaDB: https://mariadb.localhost
 
-**_Portainer Login Credentials_**
+### Portainer Login Credentials
 
 - **User:** mnestorov
 - **Password:** Eu7c16uevCRWkccZ
@@ -328,6 +331,12 @@ Apply the changes by restarting Docker Compose.
 docker compose down
 docker compose up -d
 ```
+
+## References
+
+- [Install Docker Desktop on Ubuntu](https://docs.docker.com/desktop/install/ubuntu/)
+- [Install Portainer CE with Docker on Linux](https://docs.portainer.io/start/install-ce/server/docker/linux)
+- [Traefik Proxy Documentation](https://doc.traefik.io/traefik/)
 
 ---
 
